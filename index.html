@@ -61,11 +61,6 @@
       const btnLoad   = document.getElementById("btnLoad");
       const labelDiv  = document.getElementById("label");
 
-      if (!container || !btnLoad) {
-        console.error("No encuentro el contenedor o el botón en el DOM");
-        return;
-      }
-
       const viewer = new IfcViewerAPI({
         container,
         backgroundColor: new Uint8Array([245, 245, 245])
@@ -78,7 +73,6 @@
 
       btnLoad.addEventListener("click", async () => {
         console.log("Botón pulsado");
-        alert("Cargando modelo IFC (revisa la consola si algo falla)…");
 
         if (model) {
           console.log("El modelo ya está cargado");
@@ -111,7 +105,6 @@
       };
     }
 
-    // Aseguramos que el DOM esté listo
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", init);
     } else {
