@@ -39,7 +39,7 @@
 <body>
 
   <div id="sidebar">
-    <h2>Instalación Eléctrica</h2>
+    <h1>Instalación Eléctrica</h1>
     <p>Haz clic en un elemento para ver su etiqueta.</p>
     <button id="btnLoad">Cargar modelo IFC</button>
 
@@ -54,40 +54,69 @@
   <script type="module">
     import { IfcViewerAPI } from "https://unpkg.com/web-ifc-viewer@latest/dist/web-ifc-viewer.esm.js";
 
-    const container = document.getElementById("viewer-container");
-    const viewer = new IfcViewerAPI({
-      container,
-      backgroundColor: new Uint8Array([245, 245, 245])
-    });
+    function init() {
+      console.log("Inicializando visor IFC…");
 
-    viewer.axes.setAxes();
-    viewer.grid.setGrid();
+      const container = document.getElementById("viewer-container");
+      const btnLoad   = document.getElementById("btnLoad");
+      const labelDiv  = document.getElementById("label");
 
-    let model;
+      if (!container || !btnLoad) {
+        console.error("No encuentro el contenedor o el botón en el DOM");
+        return;
+      }
 
-    document.getElementById("btnLoad").onclick = async () => {
-      if (model) return;
+      const viewer = new IfcViewerAPI({
+        container,
+        backgroundColor: new Uint8Array([245, 245, 245])
+      });
 
-      // Tu archivo IFC está en la raíz del repo: modelo.ifc
-      model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
-      viewer.camera.fitToSelection(model.modelID);
-    };
+      viewer.axes.setAxes();
+      viewer.grid.setGrid();
 
-    const labelDiv = document.getElementById("label");
+      let model;
 
-    window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
+      btnLoad.addEventListener("click", async () => {
+        console.log("Botón pulsado");
+        alert("Cargando modelo IFC (revisa la consola si algo falla)…");
 
-    window.onclick = async () => {
-      if (!model) return;
+        if (model) {
+          console.log("El modelo ya está cargado");
+          return;
+        }
 
-      const found = await viewer.IFC.selector.pickIfcItem(true);
-      if (!found) return;
+        try {
+          // Tu archivo IFC está en la raíz del repo
+          model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
+          console.log("Modelo cargado:", model);
+          viewer.camera.fitToSelection(model.modelID);
+        } catch (e) {
+          console.error("Error cargando modelo.ifc:", e);
+          labelDiv.textContent = "Error cargando modelo.ifc (mira la consola)";
+        }
+      });
 
-      const props = await viewer.IFC.getProperties(found.modelID, found.id, true);
+      window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
 
-      labelDiv.textContent = props.Name?.value || "Sin nombre";
-      console.log("Elemento seleccionado:", props);
-    };
+      window.onclick = async () => {
+        if (!model) return;
+
+        const found = await viewer.IFC.selector.pickIfcItem(true);
+        if (!found) return;
+
+        const props = await viewer.IFC.getProperties(found.modelID, found.id, true);
+        console.log("Elemento seleccionado:", props);
+
+        labelDiv.textContent = props.Name?.value || "Sin nombre";
+      };
+    }
+
+    // Aseguramos que el DOM esté listo
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
   </script>
 
 </body>
