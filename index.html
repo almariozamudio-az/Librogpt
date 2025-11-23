@@ -2,115 +2,53 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Visor BIM – Instalación eléctrica</title>
+  <title>Visor BIM IFC</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      height: 100vh;
-    }
-    #sidebar {
-      width: 280px;
-      border-right: 1px solid #ccc;
-      padding: 16px;
-      box-sizing: border-box;
-    }
-    #viewer-container {
-      flex: 1;
-      position: relative;
-    }
-    canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    #label-box {
-      margin-top: 16px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-      background: #f7f7f7;
-    }
+    body { margin: 0; display: flex; height: 100vh; font-family: Arial, sans-serif; }
+    #sidebar { width: 260px; padding: 16px; border-right: 1px solid #ccc; box-sizing: border-box; }
+    #viewer-container { flex: 1; position: relative; }
+    canvas { width: 100%; height: 100%; display: block; }
+    #status { margin-top: 12px; font-size: 14px; }
   </style>
 </head>
 
 <body>
-
   <div id="sidebar">
-    <h1>Instalación Eléctrica</h1>
-    <p>Haz clic en un elemento para ver su etiqueta.</p>
-    <button id="btnLoad">Cargar modelo IFC</button>
-
-    <div id="label-box">
-      <strong>Elemento seleccionado:</strong>
-      <div id="label">Ninguno</div>
-    </div>
+    <h2>Visor BIM</h2>
+    <button id="load">Cargar modelo IFC</button>
+    <p id="status">Estatus: esperando…</p>
   </div>
 
   <div id="viewer-container"></div>
 
   <script type="module">
-    import { IfcViewerAPI } from "https://cdn.jsdelivr.net/npm/web-ifc-viewer@1.0.218/dist/web-ifc-viewer.esm.js";
+    import { IfcViewerAPI } from "https://esm.run/web-ifc-viewer@1.0.218";
 
-    function init() {
-      console.log("Inicializando visor IFC…");
+    const container = document.getElementById("viewer-container");
+    const status    = document.getElementById("status");
+    const button    = document.getElementById("load");
 
-      const container = document.getElementById("viewer-container");
-      const btnLoad   = document.getElementById("btnLoad");
-      const labelDiv  = document.getElementById("label");
+    const viewer = new IfcViewerAPI({
+      container,
+      backgroundColor: new Uint8Array([255, 255, 255])
+    });
 
-      const viewer = new IfcViewerAPI({
-        container,
-        backgroundColor: new Uint8Array([245, 245, 245])
-      });
+    viewer.grid.setGrid();
+    viewer.axes.setAxes();
 
-      viewer.axes.setAxes();
-      viewer.grid.setGrid();
+    let model = null;
 
-      let model;
-
-      btnLoad.addEventListener("click", async () => {
-        console.log("Botón pulsado");
-
-        if (model) {
-          console.log("El modelo ya está cargado");
-          return;
-        }
-
-        try {
-          // Tu archivo IFC está en la raíz del repo
-          model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
-          console.log("Modelo cargado:", model);
-          viewer.camera.fitToSelection(model.modelID);
-        } catch (e) {
-          console.error("Error cargando modelo.ifc:", e);
-          labelDiv.textContent = "Error cargando modelo.ifc (mira la consola)";
-        }
-      });
-
-      window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
-
-      window.onclick = async () => {
-        if (!model) return;
-
-        const found = await viewer.IFC.selector.pickIfcItem(true);
-        if (!found) return;
-
-        const props = await viewer.IFC.getProperties(found.modelID, found.id, true);
-        console.log("Elemento seleccionado:", props);
-
-        labelDiv.textContent = props.Name?.value || "Sin nombre";
-      };
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", init);
-    } else {
-      init();
-    }
+    button.onclick = async () => {
+      status.textContent = "Estatus: cargando modelo.ifc…";
+      try {
+        model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
+        viewer.camera.fitToSelection(model.modelID);
+        status.textContent = "Estatus: modelo cargado ✅";
+      } catch (err) {
+        console.error("Error cargando IFC:", err);
+        status.textContent = "Estatus: ERROR cargando modelo.ifc (ver consola)";
+      }
+    };
   </script>
-
 </body>
 </html>
