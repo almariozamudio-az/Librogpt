@@ -68,9 +68,8 @@
     document.getElementById("btnLoad").onclick = async () => {
       if (model) return;
 
-      // Carga tu modelo IFC (archivo que subiste)
+      // Tu archivo IFC está en la raíz del repo: modelo.ifc
       model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
-
       viewer.camera.fitToSelection(model.modelID);
     };
 
@@ -86,7 +85,6 @@
 
       const props = await viewer.IFC.getProperties(found.modelID, found.id, true);
 
-      // Aquí es donde pondremos las etiquetas personalizadas más adelante
       labelDiv.textContent = props.Name?.value || "Sin nombre";
       console.log("Elemento seleccionado:", props);
     };
