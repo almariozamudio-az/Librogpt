@@ -20,7 +20,6 @@
   </div>
 
   <div id="viewer-container"></div>
-
   <script type="module">
     import { IfcViewerAPI } from "https://esm.run/web-ifc-viewer@1.0.218";
 
@@ -33,6 +32,9 @@
       backgroundColor: new Uint8Array([255, 255, 255])
     });
 
+    // 👇 Muy importante: indicamos la ruta a /wasm/
+    viewer.IFC.setWasmPath("./wasm/");
+
     viewer.grid.setGrid();
     viewer.axes.setAxes();
 
@@ -41,7 +43,8 @@
     button.onclick = async () => {
       status.textContent = "Estatus: cargando modelo.ifc…";
       try {
-        model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
+        const loadedModel = await viewer.IFC.loadIfcUrl("./modelo.ifc");
+        model = loadedModel;
         viewer.camera.fitToSelection(model.modelID);
         status.textContent = "Estatus: modelo cargado ✅";
       } catch (err) {
@@ -50,5 +53,5 @@
       }
     };
   </script>
-</body>
-</html>
+
+ 
