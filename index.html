@@ -20,8 +20,9 @@
   </div>
 
   <div id="viewer-container"></div>
+
   <script type="module">
-    import { IfcViewerAPI } from "https://esm.run/web-ifc-viewer@1.0.218";
+    import { IfcViewerAPI } from "https://cdn.jsdelivr.net/npm/web-ifc-viewer@1.0.218/dist/ifc-viewer-api.js";
 
     const container = document.getElementById("viewer-container");
     const status    = document.getElementById("status");
@@ -32,9 +33,6 @@
       backgroundColor: new Uint8Array([255, 255, 255])
     });
 
-    // 👇 Muy importante: indicamos la ruta a /wasm/
-    viewer.IFC.setWasmPath("./wasm/");
-
     viewer.grid.setGrid();
     viewer.axes.setAxes();
 
@@ -43,8 +41,7 @@
     button.onclick = async () => {
       status.textContent = "Estatus: cargando modelo.ifc…";
       try {
-        const loadedModel = await viewer.IFC.loadIfcUrl("./modelo.ifc");
-        model = loadedModel;
+        model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
         viewer.camera.fitToSelection(model.modelID);
         status.textContent = "Estatus: modelo cargado ✅";
       } catch (err) {
@@ -52,4 +49,8 @@
         status.textContent = "Estatus: ERROR cargando modelo.ifc (ver consola)";
       }
     };
+
+    // (más adelante aquí añadiremos el código de selección y etiquetas)
   </script>
+</body>
+</html>
