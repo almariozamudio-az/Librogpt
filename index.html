@@ -22,7 +22,7 @@
   <div id="viewer-container"></div>
 
   <script type="module">
-    import { IfcViewerAPI } from "https://esm.run/web-ifc-viewer@1.0.218";
+    import { IfcViewerAPI } from "https://cdn.jsdelivr.net/npm/web-ifc-viewer@1.0.218/dist/ifc-viewer-api.js";
 
     const container = document.getElementById("viewer-container");
     const status    = document.getElementById("status");
@@ -30,11 +30,8 @@
 
     const viewer = new IfcViewerAPI({
       container,
-      backgroundColor: new Uint8Array([255, 255, 255])
+      backgroundColor: new Uint8Array([0, 0, 0])
     });
-
-    // 👇 Forzamos a usar el wasm desde un CDN, NO desde /app/.cache/...
-    viewer.IFC.loader.ifcManager.setWasmPath("https://unpkg.com/web-ifc@0.0.47/");
 
     viewer.grid.setGrid();
     viewer.axes.setAxes();
@@ -44,11 +41,8 @@
     button.onclick = async () => {
       status.textContent = "Estatus: cargando modelo.ifc…";
       try {
-        const loaded = await viewer.IFC.loadIfcUrl("./modelo.ifc");
-        model = loaded;
-        if (model && typeof model.modelID !== "undefined") {
-          viewer.camera.fitToSelection(model.modelID);
-        }
+        model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
+        viewer.camera.fitToSelection(model.modelID);
         status.textContent = "Estatus: modelo cargado ✅";
       } catch (err) {
         console.error("Error cargando IFC:", err);
