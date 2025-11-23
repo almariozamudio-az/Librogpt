@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Visor BIM – Instalación eléctrica</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+    #sidebar {
+      width: 280px;
+      border-right: 1px solid #ccc;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    #viewer-container {
+      flex: 1;
+      position: relative;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #label-box {
+      margin-top: 16px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #f7f7f7;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="sidebar">
+    <h2>Instalación Eléctrica</h2>
+    <p>Haz clic en un elemento para ver su etiqueta.</p>
+    <button id="btnLoad">Cargar modelo IFC</button>
+
+    <div id="label-box">
+      <strong>Elemento seleccionado:</strong>
+      <div id="label">Ninguno</div>
+    </div>
+  </div>
+
+  <div id="viewer-container"></div>
+
+  <script type="module">
+    import { IfcViewerAPI } from "https://unpkg.com/web-ifc-viewer@latest/dist/web-ifc-viewer.esm.js";
+
+    const container = document.getElementById("viewer-container");
+    const viewer = new IfcViewerAPI({
+      container,
+      backgroundColor: new Uint8Array([245, 245, 245])
+    });
+
+    viewer.axes.setAxes();
+    viewer.grid.setGrid();
+
+    let model;
+
+    document.getElementById("btnLoad").onclick = async () => {
+      if (model) return;
+
+      // Carga tu modelo IFC (archivo que subiste)
+      model = await viewer.IFC.loadIfcUrl("./modelo.ifc");
+
+      viewer.camera.fitToSelection(model.modelID);
+    };
+
+    const labelDiv = document.getElementById("label");
+
+    window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
+
+    window.onclick = async () => {
+      if (!model) return;
+
+      const found = await viewer.IFC.selector.pickIfcItem(true);
+      if (!found) return;
+
+      const props = await viewer.IFC.getProperties(found.modelID, found.id, true);
+
+      // Aquí es donde pondremos las etiquetas personalizadas más adelante
+      labelDiv.textContent = props.Name?.value || "Sin nombre";
+      console.log("Elemento seleccionado:", props);
+    };
+  </script>
+
+</body>
+</html>
